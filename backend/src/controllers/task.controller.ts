@@ -8,10 +8,86 @@ export class TaskController {
   private taskRepository = AppDataSource.getRepository(Task);
   private userRepository = AppDataSource.getRepository(User);
 
-  list = async (_req: Request, res: Response) => {
+  list = async (req: Request, res: Response) => {
     try {
-      const tasks = await this.taskRepository.find();
-      return res.json(tasks);
+      const {
+        search,
+        statuses,
+        page = '1',
+        limit = '10',
+        sortBy = 'createdAt',
+        sortOrder = 'desc',
+        myTasks,
+      } = req.query as {
+        search?: string;
+        statuses?: string;
+        page?: string;
+        limit?: string;
+        sortBy?: string;
+        sortOrder?: string;
+        myTasks?: string;
+      };
+
+      const pageNumber = Math.max(parseInt(page || '1', 10) || 1, 1);
+      const pageSize = Math.min(Math.max(parseInt(limit || '10', 10) || 10, 1), 100);
+      const skip = (pageNumber - 1) * pageSize;
+
+      const qb = this.taskRepository
+        .createQueryBuilder('task')
+        .leftJoinAndSelect('task.owner', 'owner')
+        .leftJoinAndSelect('task.assignees', 'assignee')
+        .leftJoinAndSelect('task.attachments', 'attachments');
+
+      if (search && search.trim()) {
+        qb.andWhere('(LOWER(task.title) LIKE :search OR LOWER(task.description) LIKE :search)', {
+          search: `%${search.toLowerCase()}%`,
+        });
+      }
+
+      if (statuses) {
+        const statusList = statuses
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean);
+        if (statusList.length) {
+          qb.andWhere('task.status IN (:...statusList)', { statusList });
+        }
+      }
+
+      if (myTasks === 'true' && req.user?.userId) {
+        qb.andWhere('(owner.id = :userId OR assignee.id = :userId)', {
+          userId: req.user.userId,
+        });
+      }
+
+      // Sorting
+      const allowedSortColumns = {
+        createdAt: 'task.createdAt',
+        title: 'task.title',
+        status: 'task.status',
+      } as const;
+
+      const sortKey: keyof typeof allowedSortColumns =
+        typeof sortBy === 'string' && sortBy in allowedSortColumns
+          ? (sortBy as keyof typeof allowedSortColumns)
+          : 'createdAt';
+      const sortColumn = allowedSortColumns[sortKey];
+      const order: 'ASC' | 'DESC' = sortOrder === 'asc' ? 'ASC' : 'DESC';
+      qb.orderBy(sortColumn, order);
+
+      qb.skip(skip).take(pageSize);
+
+      const [items, total] = await qb.getManyAndCount();
+
+      const totalPages = Math.ceil(total / pageSize) || 1;
+
+      return res.json({
+        items,
+        total,
+        page: pageNumber,
+        pageSize,
+        totalPages,
+      });
     } catch (error) {
       return res.status(500).json({ message: 'Failed to fetch tasks' });
     }

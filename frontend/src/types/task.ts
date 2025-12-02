@@ -28,3 +28,24 @@ export type TaskInput = {
   assigneeIds?: string[];
 };
 
+export type TaskSortField = 'createdAt' | 'title' | 'status';
+
+export type TaskFilters = {
+  search?: string;
+  statuses?: TaskStatus[];
+  page?: number;
+  pageSize?: number;
+  sortBy?: TaskSortField;
+  sortOrder?: 'asc' | 'desc';
+  myTasks?: boolean;
+};
+
+export type TaskListResponse = {
+  items: Task[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+};
+
+
