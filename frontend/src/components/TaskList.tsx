@@ -40,6 +40,23 @@ export const TaskList = ({ tasks, onEdit, onDelete, currentUser }: TaskListProps
     return task.assignees.some((assignee) => assignee.id === currentUser.id);
   };
 
+  const canEdit = (task: Task): boolean => {
+    if (!currentUser) return false;
+    const roles = currentUser.roles;
+    if (roles.includes('admin') || roles.includes('manager')) return true;
+    return task.owner.id === currentUser.id;
+  };
+
+  const canDelete = (task: Task): boolean => {
+    if (!currentUser) return false;
+    const roles = currentUser.roles;
+    if (roles.includes('admin')) return true;
+    if (roles.includes('manager')) {
+      return task.owner.id === currentUser.id;
+    }
+    return task.owner.id === currentUser.id;
+  };
+
   return (
     <div className="task-list">
       {tasks.map((task) => {
@@ -109,12 +126,12 @@ export const TaskList = ({ tasks, onEdit, onDelete, currentUser }: TaskListProps
             </dl>
             {(onEdit || onDelete) && (
               <footer className="task-card__actions">
-                {onEdit && (
+                {onEdit && canEdit(task) && (
                   <button type="button" onClick={() => onEdit(task)}>
                     Edit
                   </button>
                 )}
-                {onDelete && (
+                {onDelete && canDelete(task) && (
                   <button type="button" onClick={() => onDelete(task)} className="danger">
                     Delete
                   </button>

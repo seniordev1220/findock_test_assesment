@@ -3,6 +3,7 @@ import { AppDataSource } from '../config/data-source';
 import { Task } from '../entities/Task';
 import { User } from '../entities/User';
 import { In } from 'typeorm';
+import { canDeleteTask, canEditTask } from '../utils/permissions';
 
 export class TaskController {
   private taskRepository = AppDataSource.getRepository(Task);
@@ -140,6 +141,10 @@ export class TaskController {
         return res.status(404).json({ message: 'Task not found' });
       }
 
+      if (!canEditTask(req.user, task)) {
+        return res.status(403).json({ message: 'You do not have permission to edit this task' });
+      }
+
       if (title !== undefined) task.title = title;
       if (description !== undefined) task.description = description;
       if (status !== undefined) task.status = status;
@@ -168,6 +173,10 @@ export class TaskController {
       const task = await this.taskRepository.findOne({ where: { id: taskId } });
       if (!task) {
         return res.status(404).json({ message: 'Task not found' });
+      }
+
+      if (!canDeleteTask(req.user, task)) {
+        return res.status(403).json({ message: 'You do not have permission to delete this task' });
       }
 
       await this.taskRepository.remove(task);

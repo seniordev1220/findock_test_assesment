@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import axios from 'axios';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { createTask, deleteTask, fetchTasks, updateTask } from '../api/tasks';
@@ -50,12 +51,23 @@ export const TasksPage = () => {
   const pageSize = data?.pageSize ?? filters.pageSize ?? 5;
   const totalPages = data?.totalPages ?? 1;
 
+  const getErrorMessage = (error: unknown) => {
+    if (axios.isAxiosError(error)) {
+      return error.response?.data?.message ?? error.message;
+    }
+    return error instanceof Error ? error.message : 'Unexpected error';
+  };
+
   const createMutation = useMutation({
     mutationFn: createTask,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
       setIsModalOpen(false);
       setEditingTask(null);
+    },
+    onError: (error: unknown) => {
+      const message = getErrorMessage(error);
+      window.alert(message);
     },
   });
 
@@ -66,11 +78,19 @@ export const TasksPage = () => {
       setIsModalOpen(false);
       setEditingTask(null);
     },
+    onError: (error: unknown) => {
+      const message = getErrorMessage(error);
+      window.alert(message);
+    },
   });
 
   const deleteMutation = useMutation({
     mutationFn: deleteTask,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tasks'] }),
+    onError: (error: unknown) => {
+      const message = getErrorMessage(error);
+      window.alert(message);
+    },
   });
 
   const handleCreate = (payload: TaskInput) => {
@@ -209,6 +229,7 @@ export const TasksPage = () => {
           <>
             <TaskList
               tasks={tasks}
+              currentUser={user}
               onEdit={
                 canManage
                   ? (task) => {
