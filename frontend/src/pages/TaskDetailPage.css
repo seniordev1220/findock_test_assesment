@@ -1,0 +1,157 @@
+.task-detail-page {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.task-detail-loading,
+.task-detail-error {
+  text-align: center;
+  padding: 2rem;
+  color: #64748b;
+}
+
+.task-detail-header {
+  margin-bottom: 2rem;
+}
+
+.task-detail-back {
+  margin-bottom: 1rem;
+  background: transparent;
+  border: none;
+  color: #2563eb;
+  cursor: pointer;
+  padding: 0.5rem 0;
+  font-size: 0.9rem;
+}
+
+.task-detail-back:hover {
+  text-decoration: underline;
+}
+
+.task-detail-title {
+  margin: 0;
+  font-size: 2rem;
+  color: #1e293b;
+}
+
+.task-detail-content {
+  display: flex;
+  gap: 2rem;
+}
+
+.task-detail-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.task-detail-sidebar {
+  width: 350px;
+  flex-shrink: 0;
+}
+
+.task-detail-section {
+  background: #ffffff;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.1);
+  margin-bottom: 1.5rem;
+}
+
+.task-detail-section h2 {
+  margin: 0 0 1rem 0;
+  font-size: 1.25rem;
+  color: #1e293b;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 0.5rem;
+}
+
+.task-detail-description {
+  color: #475569;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.task-detail-details {
+  display: grid;
+  gap: 1rem;
+}
+
+.task-detail-details > div {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+.task-detail-details dt {
+  font-weight: 600;
+  color: #64748b;
+}
+
+.task-detail-details dd {
+  margin: 0;
+  color: #1e293b;
+}
+
+.task-detail-user {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.task-detail-role {
+  color: #64748b;
+  font-size: 0.875rem;
+  font-weight: normal;
+}
+
+.task-detail-assignees {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.task-detail-attachments {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.task-detail-attachments li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.task-detail-attachments a {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.task-detail-attachments a:hover {
+  text-decoration: underline;
+}
+
+.task-detail-attachment-type {
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+  .task-detail-content {
+    flex-direction: column;
+  }
+
+  .task-detail-sidebar {
+    width: 100%;
+  }
+
+  .task-detail-details > div {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+}
+

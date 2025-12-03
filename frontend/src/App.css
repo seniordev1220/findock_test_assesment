@@ -255,6 +255,23 @@
   flex: 1;
 }
 
+.task-card__title-link {
+  background: none;
+  border: none;
+  color: #1e293b;
+  font-size: inherit;
+  font-weight: inherit;
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+  transition: color 0.2s ease;
+}
+
+/* .task-card__title-link:hover {
+  color: #2563eb;
+  text-decoration: underline;
+} */
+
 .task-card__badge {
   font-size: 0.7rem;
   padding: 0.2rem 0.5rem;

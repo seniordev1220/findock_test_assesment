@@ -48,4 +48,16 @@ export type TaskListResponse = {
   totalPages: number;
 };
 
+export type Comment = {
+  id: string;
+  content: string;
+  task: Task;
+  author: AuthUser;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CommentInput = {
+  content: string;
+};
 

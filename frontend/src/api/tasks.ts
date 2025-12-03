@@ -1,5 +1,10 @@
 import { apiClient } from './client';
-import { Task, TaskFilters, TaskInput, TaskListResponse } from '../types/task';
+import { Task, TaskFilters, TaskInput, TaskListResponse, Comment, CommentInput } from '../types/task';
+
+export const fetchTask = async (id: string): Promise<Task> => {
+  const { data } = await apiClient.get<Task>(`/tasks/${id}`);
+  return data;
+};
 
 export const fetchTasks = async (filters?: TaskFilters): Promise<TaskListResponse> => {
   const params: Record<string, unknown> = {};
@@ -42,5 +47,25 @@ export const updateTask = async (id: string, payload: TaskInput): Promise<Task> 
 
 export const deleteTask = async (id: string): Promise<void> => {
   await apiClient.delete(`/tasks/${id}`);
+};
+
+// Comment API functions
+export const fetchComments = async (taskId: string): Promise<Comment[]> => {
+  const { data } = await apiClient.get<Comment[]>(`/tasks/${taskId}/comments`);
+  return data;
+};
+
+export const createComment = async (taskId: string, payload: CommentInput): Promise<Comment> => {
+  const { data } = await apiClient.post<Comment>(`/tasks/${taskId}/comments`, payload);
+  return data;
+};
+
+export const updateComment = async (id: string, payload: CommentInput): Promise<Comment> => {
+  const { data } = await apiClient.put<Comment>(`/comments/${id}`, payload);
+  return data;
+};
+
+export const deleteComment = async (id: string): Promise<void> => {
+  await apiClient.delete(`/comments/${id}`);
 };
 

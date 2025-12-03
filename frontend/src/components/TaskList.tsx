@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { Task } from '../types/task';
 import { AuthUser } from '../types/auth';
 import { getUserInitials, getAvatarBackgroundColor } from '../utils/avatars';
@@ -31,6 +32,8 @@ const formatRoles = (roles: unknown): string => {
 };
 
 export const TaskList = ({ tasks, onEdit, onDelete, currentUser }: TaskListProps) => {
+  const navigate = useNavigate();
+
   if (!tasks.length) {
     return <p className="empty-state">No tasks yet.</p>;
   }
@@ -68,7 +71,13 @@ export const TaskList = ({ tasks, onEdit, onDelete, currentUser }: TaskListProps
           >
             <header className="task-card__header">
               <h3>
-                {task.title}
+                <button
+                  className="task-card__title-link"
+                  onClick={() => navigate(`/tasks/${task.id}`)}
+                  title="View task details"
+                >
+                  {task.title}
+                </button>
                 {isAssigned && (
                   <span className="task-card__badge" title="Assigned to you">
                     You

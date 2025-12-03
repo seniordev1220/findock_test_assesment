@@ -8,6 +8,7 @@ const controller = new TaskController();
 router.use(authenticate);
 
 router.get('/', controller.list);
+router.get('/:id', controller.get);
 router.post('/', authorize('admin', 'manager'), controller.create);
 router.put('/:id', controller.update);
 router.delete('/:id', controller.remove);

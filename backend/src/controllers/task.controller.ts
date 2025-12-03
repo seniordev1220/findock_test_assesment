@@ -9,6 +9,29 @@ export class TaskController {
   private taskRepository = AppDataSource.getRepository(Task);
   private userRepository = AppDataSource.getRepository(User);
 
+  get = async (req: Request, res: Response) => {
+    try {
+      const taskId = req.params.id;
+      if (!taskId) {
+        return res.status(400).json({ message: 'Task ID is required' });
+      }
+
+      const task = await this.taskRepository.findOne({
+        where: { id: taskId },
+        relations: ['owner', 'assignees', 'attachments', 'comments', 'comments.author'],  
+      });
+
+      if (!task) {
+        return res.status(404).json({ message: 'Task not found' });
+      }
+
+      console.log(task)
+      return res.json(task);
+    } catch (error) {
+      return res.status(500).json({ message: 'Failed to fetch task' });
+    }
+  };
+
   list = async (req: Request, res: Response) => {
     try {
       const {
