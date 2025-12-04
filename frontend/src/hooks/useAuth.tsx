@@ -1,7 +1,7 @@
-import axios from 'axios';
 import { ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { AuthResponse, LoginPayload, RegisterPayload } from '../types/auth';
 import { loginRequest, registerRequest } from '../api/auth';
+import { getApiErrorMessage } from '../utils/apiError';
 
 type AuthContextValue = {
   user: AuthResponse['user'] | null;
@@ -45,20 +45,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [user]);
 
-  const getErrorMessage = (error: unknown) => {
-    if (axios.isAxiosError(error)) {
-      return error.response?.data?.message ?? error.message;
-    }
-    return error instanceof Error ? error.message : 'Unexpected error';
-  };
-
   const login = useCallback(async (payload: LoginPayload) => {
     try {
       const response = await loginRequest(payload);
       setToken(response.token);
       setUser(response.user);
     } catch (error) {
-      throw new Error(getErrorMessage(error));
+      throw new Error(getApiErrorMessage(error, 'Failed to login'));
     }
   }, []);
 
@@ -68,7 +61,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         await registerRequest(payload);
         await login({ email: payload.email, password: payload.password });
       } catch (error) {
-        throw new Error(getErrorMessage(error));
+        throw new Error(getApiErrorMessage(error, 'Failed to register'));
       }
     },
     [login],

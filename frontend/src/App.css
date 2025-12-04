@@ -81,6 +81,13 @@
   border-radius: 6px;
 }
 
+.field-error {
+  margin-top: -0.25rem;
+  margin-bottom: 0.25rem;
+  font-size: 0.8rem;
+  color: #b91c1c;
+}
+
 .auth-card input {
   padding: 0.6rem 0.75rem;
   border: 1px solid #cbd5f5;

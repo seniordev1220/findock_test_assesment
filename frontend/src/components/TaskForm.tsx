@@ -24,6 +24,7 @@ export const TaskForm = ({ initialValue, onSubmit, submitLabel = 'Create Task' }
   );
 
   const [form, setForm] = useState<TaskInput>(computedInitialValue);
+  const [errors, setErrors] = useState<{ title?: string; description?: string }>({});
 
   useEffect(() => {
     setForm(computedInitialValue);
@@ -31,6 +32,12 @@ export const TaskForm = ({ initialValue, onSubmit, submitLabel = 'Create Task' }
 
   const handleChange = (key: keyof TaskInput, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
+    if (key === 'title' && errors.title) {
+      setErrors((prev) => ({ ...prev, title: undefined }));
+    }
+    if (key === 'description' && errors.description) {
+      setErrors((prev) => ({ ...prev, description: undefined }));
+    }
   };
 
   const handleAssigneesChange = (assigneeIds: string[]) => {
@@ -39,6 +46,22 @@ export const TaskForm = ({ initialValue, onSubmit, submitLabel = 'Create Task' }
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const nextErrors: { title?: string; description?: string } = {};
+    if (!form.title.trim()) {
+      nextErrors.title = 'Title is required';
+    } else if (form.title.length < 3) {
+      nextErrors.title = 'Title must be at least 3 characters';
+    } else if (form.title.length > 120) {
+      nextErrors.title = 'Title must be at most 120 characters';
+    }
+
+    if (form.description && form.description.length > 2000) {
+      nextErrors.description = 'Description must be at most 2000 characters';
+    }
+
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) return;
+
     onSubmit(form);
     setForm({ ...defaultTask });
   };
@@ -54,6 +77,7 @@ export const TaskForm = ({ initialValue, onSubmit, submitLabel = 'Create Task' }
           value={form.title}
           onChange={(event) => handleChange('title', event.target.value)}
         />
+        {errors.title && <div className="field-error">{errors.title}</div>}
       </div>
       <div className="form-group">
         <label htmlFor="task-description">Description</label>
@@ -62,6 +86,7 @@ export const TaskForm = ({ initialValue, onSubmit, submitLabel = 'Create Task' }
           value={form.description || ''}
           onChange={(event) => handleChange('description', event.target.value)}
         />
+        {errors.description && <div className="field-error">{errors.description}</div>}
       </div>
       <div className="form-group">
         <label htmlFor="task-status">Status</label>

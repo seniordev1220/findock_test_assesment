@@ -3,13 +3,16 @@ import { AppDataSource } from '../config/data-source';
 import { User } from '../entities/User';
 import { Role } from '../entities/Role';
 import { hashPassword, comparePassword, generateJwt } from '../utils/auth';
+import { RegisterDto, LoginDto } from '../dto/auth.dto';
 
 export class AuthController {
   private userRepository = AppDataSource.getRepository(User);
   private roleRepository = AppDataSource.getRepository(Role);
 
   register = async (req: Request, res: Response) => {
-    const { email, password, firstName, lastName, roles = ['user'] } = req.body;
+    const { email, password, firstName, lastName, roles = ['user'] } = req.body as RegisterDto & {
+      roles?: string[];
+    };
 
     try {
       const existing = await this.userRepository.findOne({ where: { email } });
@@ -45,7 +48,7 @@ export class AuthController {
   };
 
   login = async (req: Request, res: Response) => {
-    const { email, password } = req.body;
+    const { email, password } = req.body as LoginDto;
 
     try {
       const user = await this.userRepository.findOne({ where: { email } });

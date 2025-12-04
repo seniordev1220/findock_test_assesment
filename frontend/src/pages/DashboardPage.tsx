@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Carousel } from '../components/Carousel';
 import { fetchTasks } from '../api/tasks';
 import { uploadFile } from '../api/uploads';
+import { getApiErrorMessage } from '../utils/apiError';
 import { CarouselItem } from '../types/dashboard';
 
 export const DashboardPage = () => {
@@ -42,7 +43,7 @@ export const DashboardPage = () => {
       await uploadFile(file);
       setUploadStatus('Upload successful');
     } catch (error) {
-      setUploadStatus(error instanceof Error ? error.message : 'Upload failed');
+      setUploadStatus(getApiErrorMessage(error, 'Upload failed'));
     }
   };
 

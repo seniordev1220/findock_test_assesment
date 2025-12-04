@@ -1,5 +1,4 @@
-import { useMemo, useState } from 'react';
-import axios from 'axios';
+import { useMemo, useState, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router-dom';
 import { createTask, deleteTask, fetchTasks, updateTask } from '../api/tasks';
@@ -7,6 +6,7 @@ import { Task, TaskInput, TaskStatus, TaskFilters } from '../types/task';
 import { TaskForm } from '../components/TaskForm';
 import { TaskList } from '../components/TaskList';
 import { useAuth } from '../hooks/useAuth';
+import { getApiErrorMessage } from '../utils/apiError';
 
 export const TasksPage = () => {
   const queryClient = useQueryClient();
@@ -14,6 +14,7 @@ export const TasksPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [queryError, setQueryError] = useState<string | null>(null);
 
   const initialFilters: TaskFilters = useMemo(() => {
     const search = searchParams.get('search') ?? undefined;
@@ -39,8 +40,9 @@ export const TasksPage = () => {
   }, [searchParams]);
 
   const [filters, setFilters] = useState<TaskFilters>(initialFilters);
+  const [searchInput, setSearchInput] = useState(initialFilters.search ?? '');
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['tasks', filters],
     queryFn: () => fetchTasks(filters),
   });
@@ -51,12 +53,13 @@ export const TasksPage = () => {
   const pageSize = data?.pageSize ?? filters.pageSize ?? 5;
   const totalPages = data?.totalPages ?? 1;
 
-  const getErrorMessage = (error: unknown) => {
-    if (axios.isAxiosError(error)) {
-      return error.response?.data?.message ?? error.message;
+  useEffect(() => {
+    if (error) {
+      setQueryError(getApiErrorMessage(error, 'Failed to load tasks'));
+    } else {
+      setQueryError(null);
     }
-    return error instanceof Error ? error.message : 'Unexpected error';
-  };
+  }, [error]);
 
   const createMutation = useMutation({
     mutationFn: createTask,
@@ -66,7 +69,7 @@ export const TasksPage = () => {
       setEditingTask(null);
     },
     onError: (error: unknown) => {
-      const message = getErrorMessage(error);
+      const message = getApiErrorMessage(error, 'Failed to create task');
       window.alert(message);
     },
   });
@@ -79,7 +82,7 @@ export const TasksPage = () => {
       setEditingTask(null);
     },
     onError: (error: unknown) => {
-      const message = getErrorMessage(error);
+      const message = getApiErrorMessage(error, 'Failed to update task');
       window.alert(message);
     },
   });
@@ -88,7 +91,7 @@ export const TasksPage = () => {
     mutationFn: deleteTask,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tasks'] }),
     onError: (error: unknown) => {
-      const message = getErrorMessage(error);
+      const message = getApiErrorMessage(error, 'Failed to delete task');
       window.alert(message);
     },
   });
@@ -105,17 +108,26 @@ export const TasksPage = () => {
   const canManage = user?.roles.some((role) => role === 'admin' || role === 'manager');
 
   const handleSearchChange = (value: string) => {
-    const nextFilters: TaskFilters = { ...filters, search: value || undefined, page: 1 };
-    setFilters(nextFilters);
-    const nextParams: Record<string, string> = {};
-    if (nextFilters.search) nextParams.search = nextFilters.search;
-    if (nextFilters.statuses?.length) nextParams.statuses = nextFilters.statuses.join(',');
-    nextParams.page = String(nextFilters.page ?? 1);
-    nextParams.sortBy = nextFilters.sortBy ?? 'createdAt';
-    nextParams.sortOrder = nextFilters.sortOrder ?? 'desc';
-    if (nextFilters.myTasks) nextParams.myTasks = 'true';
-    setSearchParams(nextParams);
+    setSearchInput(value);
   };
+
+  // Debounce search input before updating filters (bonus)
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      const nextFilters: TaskFilters = { ...filters, search: searchInput || undefined, page: 1 };
+      setFilters(nextFilters);
+      const nextParams: Record<string, string> = {};
+      if (nextFilters.search) nextParams.search = nextFilters.search;
+      if (nextFilters.statuses?.length) nextParams.statuses = nextFilters.statuses.join(',');
+      nextParams.page = String(nextFilters.page ?? 1);
+      nextParams.sortBy = nextFilters.sortBy ?? 'createdAt';
+      nextParams.sortOrder = nextFilters.sortOrder ?? 'desc';
+      if (nextFilters.myTasks) nextParams.myTasks = 'true';
+      setSearchParams(nextParams);
+    }, 300);
+
+    return () => clearTimeout(timeout);
+  }, [searchInput, filters, setSearchParams]);
 
   const handleStatusToggle = (status: TaskStatus) => {
     const current = filters.statuses ?? [];
@@ -173,7 +185,7 @@ export const TasksPage = () => {
             <input
               type="text"
               placeholder="Search by title or description..."
-              value={filters.search ?? ''}
+              value={searchInput}
               onChange={(e) => handleSearchChange(e.target.value)}
               className="tasks-search-input"
             />
@@ -225,6 +237,13 @@ export const TasksPage = () => {
         </div>
         {isLoading ? (
           <p>Loading tasks…</p>
+        ) : queryError ? (
+          <div className="form-error">
+            {queryError}{' '}
+            <button type="button" onClick={() => queryClient.invalidateQueries({ queryKey: ['tasks'] })}>
+              Retry
+            </button>
+          </div>
         ) : (
           <>
             <TaskList

@@ -1,187 +1,35 @@
-# Full-Stack Hiring Challenge Scaffold
+## Completed Challenges (Candidate Notes)
 
-This repository provides a starter kit for a full-stack take-home exercise. The focus is on building out missing features and demonstrating end-to-end proficiency across React, Express, TypeORM, and PostgreSQL.
+- **Challenge 1: Task Assignment UI**
+  - Implemented `AssigneeSelector` with user search, role display, and avatar initials.
+  - Backend `users` endpoint used to populate selector; selected assignees are persisted via `assigneeIds`.
+  - Task cards and detail view show owner/assignees with roles and avatars; tasks assigned to the current user are visually highlighted.
 
-## Features Included
+- **Challenge 2: Task Filtering, Search & Pagination**
+  - Backend task listing supports search, status filters, pagination, and sorting.
+  - Frontend `TasksPage` adds search box, multi-status filters, pagination controls, and "My Tasks" toggle.
+  - Filter/search state is synchronized with URL query parameters; list header shows total count and page information.
 
-- JWT authentication with role-based access control (`admin`, `manager`, `user`)
-- TypeORM data model showcasing one-to-many and many-to-many relations
-- Task management CRUD endpoints and React UI
-- File upload endpoint with disk storage and validation
-- Responsive dashboard with animated carousel and backside flip interactions
+- **Challenge 4: Task Detail View & Comments**
+  - Added `/tasks/:id` route with a rich task detail page.
+  - Detail view shows full task info, assignees, attachments, timestamps, and a comments section.
+  - Comments support create/update/delete, relative timestamps, light markdown, and basic @mention UX.
+  - An `ActivityTimeline` component surfaces recent task/comment activity.
 
-## Tech Overview
+- **Challenge 5: Input Validation & Error Handling**
+  - **Backend**
+    - Introduced DTOs with `class-validator` for auth (`RegisterDto`, `LoginDto`) and tasks (`CreateTaskDto`, `UpdateTaskDto`).
+    - Added validation middleware that returns structured errors and user-friendly messages.
+    - Centralized error handler for API and file upload errors (size/type) and added basic rate limiting using `express-rate-limit` (bonus).
+  - **Frontend**
+    - Added inline field validation for login, registration, and task forms with helpful error messages.
+    - Improved loading and error states in list/detail/dashboard views and surfaced friendly API errors.
+    - Implemented debounced task search input, retry logic for transient API failures, and a small client-side error helper (bonus).
 
-- **Backend**: Node.js, Express, TypeORM, PostgreSQL
-- **Frontend**: React (Vite, TypeScript), React Router, React Query
+### Additional Setup / Notes
 
-## Setup
-
-### Backend
-
-```bash
-cd backend
-cp env.example .env
-npm install
-```
-
-#### Option 1: PostgreSQL (default)
-
-```bash
-npm run dev
-```
-
-The server starts on `http://localhost:4000`. Make sure PostgreSQL is running and the connection values in `.env` are valid.
-
-#### Option 2: SQLite (no external DB required)
-
-```bash
-mkdir -p data
-sqlite3 data/task_app.sqlite < sql/sqlite-sample.sql   # optional sample data
-set DB_TYPE=sqlite # or export for bash/zsh
-npm run migration:run                                  # sets up schema via TypeORM
-npm run dev
-```
-
-When using SQLite you can customise the database location through `DB_PATH` in `.env`. Set `DB_SYNCHRONIZE=true` if you prefer schema auto-sync instead of migrations.
-
-### Frontend
-
-```bash
-cd frontend
-cp env.example .env
-npm install
-npm run dev
-```
-
-The frontend expects the backend at `http://localhost:4000/api`. Adjust `VITE_API_URL` if the server URL differs.
-
-## Developer Challenges
-
-Complete **3 out of 5** challenges below. Focus on clean code, proper error handling, and thoughtful user experience.
-
-### Challenge 1: Task Assignment UI ⭐
-**Difficulty: Medium**
-
-The backend already supports assigning users to tasks via `assigneeIds`, but the frontend UI is missing.
-
-**Requirements:**
-- Add a multi-select dropdown or autocomplete component to the task form
-- Fetch and display list of users from the backend (create a users API endpoint if needed)
-- Show assigned users on task cards in the task list
-- Allow filtering tasks by assignee
-- Display assignee avatars/initials on task cards
-
-**Bonus:**
-- Search/filter users in the assignee selector
-- Show user roles next to names
-- Add visual indicators for tasks assigned to the current user
-
----
-
-### Challenge 2: Task Filtering, Search & Pagination ⭐
-**Difficulty: Medium**
-
-Enhance the task list with better data management capabilities.
-
-**Requirements:**
-- Add search functionality (filter by title and description)
-- Add status filter (todo, in_progress, done) with ability to select multiple
-- Implement pagination on backend (limit, offset, or cursor-based)
-- Add pagination controls on frontend (page numbers, prev/next buttons)
-- Show total task count and current page info
-- Persist filter/search state in URL query parameters
-
-**Bonus:**
-- Add sorting options (by date created, title, status)
-- Add "My Tasks" filter (tasks where user is owner or assignee)
-- Remember filter preferences in localStorage
-
----
-
-### Challenge 3: Enhanced RBAC & Task Permissions
-**Difficulty: Medium-Hard**
-
-Implement proper role-based access control for task operations.
-
-**Requirements:**
-- **Backend:** Add permission checks in task controller:
-  - Regular users can only edit/delete tasks they own
-  - Managers can edit any task but only delete their own
-  - Admins have full access (edit/delete any task)
-- **Backend:** Add middleware or helper function to check permissions
-- **Frontend:** Hide edit/delete buttons based on user permissions
-- **Frontend:** Show appropriate error messages when permission denied
-- Add unit tests or integration tests for permission logic
-
-**Bonus:**
-- Add audit logging for permission-denied attempts
-- Create a permissions matrix documentation
-- Add role-based task visibility (users only see tasks they're involved in)
-
----
-
-### Challenge 4: Task Detail View & Comments
-**Difficulty: Medium**
-
-Create a dedicated page for viewing and managing individual tasks.
-
-**Requirements:**
-- Create a new route `/tasks/:id` with a task detail page
-- Display all task information (title, description, status, owner, assignees, attachments)
-- Add a comments/notes section where users can:
-  - Add comments to tasks
-  - View comment history with timestamps and authors
-  - Edit/delete their own comments
-- Backend: Create comments entity and API endpoints (CRUD operations)
-- Add navigation from task list to detail view
-- Show task creation and update timestamps
-
-**Bonus:**
-- Add @mention functionality in comments
-- Show comment notifications
-- Add rich text formatting for comments
-- Display task activity timeline
-
----
-
-### Challenge 5: Input Validation & Error Handling
-**Difficulty: Medium**
-
-Improve validation and error handling throughout the application.
-
-**Requirements:**
-- **Backend:** Add comprehensive validation using `class-validator`:
-  - Email format validation for registration/login
-  - Password strength requirements (min length, complexity)
-  - Task title/description length limits
-  - File upload validation (size, type, count)
-- **Backend:** Create custom validation decorators where appropriate
-- **Backend:** Return detailed, user-friendly error messages
-- **Frontend:** Display validation errors inline in forms
-- **Frontend:** Show loading states and handle network errors gracefully
-- **Frontend:** Add form field validation before submission
-- Handle edge cases: duplicate emails, invalid IDs, missing required fields
-
-**Bonus:**
-- Add request rate limiting middleware
-- Implement client-side debouncing for search inputs
-- Add retry logic for failed API requests
-- Create a centralized error handling system
-
----
-
-## Submission Guidelines
-
-After completing your challenges:
-
-1. **Update README**: Document which challenges you completed and any additional setup required
-2. **Submit Your Work**:
-   - Add this repository to your GitHub account
-   - Send an email to the hugo@findock.xyz with the repository link
-   - We will review your submission and get back to you
-
-**Important Notes:**
-- **Quality over quantity**: It's better to complete fewer challenges well than many challenges poorly. Focus on demonstrating your understanding of the stack and best practices.
-- **No AI Tools**: Please do not use AI tools like ChatGPT or Copilot for this assessment. We want to evaluate your own coding abilities and problem-solving skills.
+- **Rate limiting**: Enabled by default in the backend via `express-rate-limit` (100 requests/minute window). If this interferes with automated testing, adjust or remove the limiter in `backend/src/app.ts`.
+- **Environment variables**:
+  - Backend expects `JWT_SECRET` and DB config as described above; validation/error features work with both PostgreSQL and SQLite setups.
+  - Frontend reads `VITE_API_URL` (default `http://localhost:4000/api`) and uses it for task detail attachment links and API client.
 

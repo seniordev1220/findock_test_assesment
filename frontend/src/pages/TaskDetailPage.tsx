@@ -1,6 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
 import { fetchTask, fetchComments, createComment, updateComment, deleteComment } from '../api/tasks';
 import { Comment, CommentInput } from '../types/task';
 import { useAuth } from '../hooks/useAuth';
@@ -8,6 +7,7 @@ import { getUserInitials, getAvatarBackgroundColor } from '../utils/avatars';
 import { CommentsSection } from '../components/CommentsSection';
 import { ActivityTimeline } from '../components/ActivityTimeline';
 import './TaskDetailPage.css';
+import { getApiErrorMessage } from '../utils/apiError';
 
 export const TaskDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -54,13 +54,6 @@ export const TaskDetailPage = () => {
     return String(roles);
   };
 
-  const getErrorMessage = (error: unknown) => {
-    if (axios.isAxiosError(error)) {
-      return error.response?.data?.message ?? error.message;
-    }
-    return error instanceof Error ? error.message : 'Unexpected error';
-  };
-
   const createCommentMutation = useMutation({
     mutationFn: ({ taskId, payload }: { taskId: string; payload: CommentInput }) =>
       createComment(taskId, payload),
@@ -69,7 +62,7 @@ export const TaskDetailPage = () => {
       queryClient.invalidateQueries({ queryKey: ['task', id] });
     },
     onError: (error: unknown) => {
-      const message = getErrorMessage(error);
+      const message = getApiErrorMessage(error, 'Failed to create comment');
       window.alert(message);
     },
   });
@@ -81,7 +74,7 @@ export const TaskDetailPage = () => {
       queryClient.invalidateQueries({ queryKey: ['comments', id] });
     },
     onError: (error: unknown) => {
-      const message = getErrorMessage(error);
+      const message = getApiErrorMessage(error, 'Failed to update comment');
       window.alert(message);
     },
   });
@@ -93,7 +86,7 @@ export const TaskDetailPage = () => {
       queryClient.invalidateQueries({ queryKey: ['task', id] });
     },
     onError: (error: unknown) => {
-      const message = getErrorMessage(error);
+      const message = getApiErrorMessage(error, 'Failed to delete comment');
       window.alert(message);
     },
   });
